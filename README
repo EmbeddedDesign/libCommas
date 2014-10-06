@@ -1,0 +1,273 @@
+/**
+ *    ██╗     ██╗██████╗  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███████╗
+ *    ██║     ██║██╔══██╗██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗██╔════╝
+ *    ██║     ██║██████╔╝██║     ██║   ██║██╔████╔██║██╔████╔██║███████║███████╗
+ *    ██║     ██║██╔══██╗██║     ██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║╚════██║
+ *    ███████╗██║██████╔╝╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║███████║
+ *    ╚══════╝╚═╝╚═════╝  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝
+ *                            libCommas and Prosper!!!
+ */
+
+README
+
+	libCommas (Communications Assurance Library) aims to provide an authenticated
+	messaging framework on highly resource-constrained endpoint devices.
+
+	What is this good for?
+		Not all data needs to be encrypted but it would often be useful to know
+		with reasonably high assurance that the data we're receiving is from who
+		it says it's from.
+
+		Small, constrained, end devices like temperature sensors that only need to
+		send periodic data or relays that open things like garage doors might be
+		useful applications for this library.
+
+	Currently supported targets for endpoint devices are AVR (currently ATmega328p)
+	and x86.
+		We soon hope to support other AVRs and other microcontroller families.
+	Currently supported targets for border router devices are x86.
+		We soon hope to support ARM (and later possibly MIPS).
+
+	Currently in use are implementations of SHA-256, ECDSA prime256v1 (secp256r1),
+	and protobuf.
+
+	Currently only a single connection between one end device and one border router
+	is supported. Support for multiple end devices is a goal for the near future.
+
+	The Makefile will almost certainly require configuration prior to use.
+	The easiest way to get what you need is to install the Arduino IDE and update
+	the Makefile to point to its versions of the compilers and Binutils tools,
+	often found in (Arduino install directory)/hardware/tools/avr/bin/avr-*
+
+	While this is the quickest solution, you are also free to install the required
+	packages via apt-get (or your package manager of choice) or to build and install
+	from source.
+	The following resource may be of use if you are a glutten for such punishment:
+		http://www.nongnu.org/avr-libc/user-manual/install_tools.html
+
+	The Makefile variables which are likely to require updating include:
+		AVRPORT - The upload port for the AVR
+		AVRGPP - avr-g++ executable
+		AVRGCC - avr-gcc executable
+		AVRAR - avr-ar executable
+		AVROBJCOPY - avr-objcopy executable
+		AVRSTRIP - avr-strip executable
+		AVRSIZE - avr-size executable
+		AVRDUDE - avrdude executable
+		PORT - The serial port to communicate on for the border router
+		GPP - g++ executable
+		AR - ar executable
+		BAUD_RATE - The baud rate for both the AVR and the border router serial
+			Currently supported baud rates are:
+			1200, 2400, 9600, 14400, 19200, 28800, 38400
+			Default is 19200
+
+	The versions of software used for developement and testing are:
+		avr-gcc: 4.3.2
+		avr-g++: 4.8.2
+		avr-ar: (GNU Binutils) 2.24
+		avr-objcopy: (GNU Binutils) 2.24
+		avr-strip: (GNU Binutils) 2.24
+		avrdude: 6.0.1
+		g++: 4.8.2
+		ar: (GNU Binutils) 2.24
+
+	Makefile targets include:
+		make KEYS - Generates keys.h header file
+		make AVR_FACTORY - Builds libCommas and code for atmega328p target to write keys
+			to EERPROM.
+		make AVR - Builds libCommas and uploadable demo code for atmega328p target main
+			loop.
+		make UPLOAD - Attempts to upload generated .hex file to atmega328p target.
+		make X86 - Builds libCommas and executable demo code for x86 target.
+
+		Due to a number of #define's used to tell the compiler to use optional inline
+		assembly for serveral included libraries, it is unlikely that the libCommas
+		library compiled for one platform will work on another.
+
+		You will probably need to run make clean in-between make (target) commands to
+		get everything to compile and work as intended.
+
+		Our build process typically looks like this:
+			To write keys:
+				make KEYS
+				make AVR_FACTORY
+				make UPLOAD
+			Once we're satisfied keys are being written and read successfully:
+				make AVR
+				make UPLOAD
+				make X86
+				./bin/border_router
+
+	Generating Keys:
+		In order to fit onto the atmega328p and persist keys, internal EEPROM memory
+		is utilized.
+
+		Prior to implementing a join-sequence state machine, keys must me generated
+		and written to EEPROM using the Commas_FACTORY functions provided in the library.
+		set and get functions are provided to write and read back keys for verifcation.
+
+		Keys may be generated using the make KEYS command which utilzes OpenSSL and
+		libCommas to generate a keys.h header file.
+
+	Join-Sequence State Machine:
+
+			  End Device					Border Router
+		+----------------------+        +--------------------+
+		|sendHelloMessage()    |------->|verifyHelloMessage()|
+		+----------------------+        +--------------------+
+		                                                     |
+		                                                     |
+		                                                     v
+		+----------------------+        +--------------------+
+		|verifyJoinRequest()   |<-------|sendJoinRequest()   |
+		+----------------------+        +--------------------+
+		|                                                     
+		|                                                     
+		v                                                     
+		+----------------------+        +--------------------+
+		|sendJoinResponse()    |------->|verifyJoinResponse()|
+		+----------------------+        +--------------------+
+		                                                     |
+		                                                     |
+		                                                     v
+		+----------------------+        +--------------------+
+		|verifyTokenSignature()|<-------|sendTokenSignature()|
+		+----------------------+        +--------------------+
+		|                                                     
+		|                                                     
+		v                                                     
+		+----------------------+        +--------------------+
+		|sendACK()             |------->|verifyACK()         |
+		+----------------------+        +--------------------+
+
+		After which calls to sendSignedData() or sendUnsignedData() can be made in
+		either direction. verifySignedData() can be called to verify the authenticity
+		of signed data.
+
+	Ubuntu 14.04 x86 64-bit was used for developement and testing.
+	
+	AVR code has been tested on the atmega328p over USB via FTDI and through X-Bee
+	configured in transparent serial mode using hardware serial.
+
+	A Note on Fuses:
+		Properly setting fuses on an AVR can be complicated business.
+		We do know that you will likely need to enable (set to 0) the EESAVE fuse.
+		We can confirm that the Sparkfun RedBoard seems to work great right out of
+		the box.
+		Arduino Uno and the older Duemilanove may work depending upon the version of
+		hardware and software you are using.
+		More information regarding proper fuse settings will be included in future
+		releases.
+
+	Source files are organized(ish) as such:
+	├── LICENSE - Apache License, Version 2.0
+	├── Makefile - A rough but functional Makefile
+	├── README - This file
+	├── useful_openssl_commands - A list of useful commands to generate keys and such
+	├── bin
+	│   ├── The location where binaries and hex files are placed
+	│   └── lib
+	│       └── The location where libCommas and other generated libraries go
+	├── include
+	│   ├── Headers for pretty much everything
+	│   ├── avr
+	│   │   └── AVR specific header files
+	│   ├── avr-libc
+	│   │   └── AVR-Libc files
+	│   └── util
+	│       └── Util specefic header files (such as delay)
+	└── src
+	    ├── keys
+	    │   └── x86 bash script and gen_key_header.cpp to create keys.h header
+	 	├── avr
+	    │   └── AVR main.cpp - Endpoint device main code
+	    ├── border_router
+	    │   └── border_router.cpp - Border Router main code
+		├── X86_Node
+	    │   └── node.cpp - An x86 version of an endpoint device for testing
+	    ├── commas
+	    │   └── commas.cpp - libCommas implementation
+	    ├── interfaces - Platform specific interface implementations
+	    │   ├── AVR
+	    │   │   └── AVR specific interface implementations
+	    │   └── Unix
+	    │       └── *nix specific interface implementations
+	    ├── intermediates
+	    │   └── Generated object files get moved to here
+	    ├── messaging
+	    │   └── Generated nanobp C files
+	    ├── sha256
+	    │   └── AVR-Crypto-Lib source and assembly files
+	    ├── tinyserial
+	    │   ├── libtinyserial.a - tinyserial library for atmega328p target
+	    │   └── tinyserial assembly and generated object files for atmega328p
+	    └── uEcc
+	        └── uECC C code
+
+AUTHORS
+
+	In Base64 alphabetical order (let's not play favorites):
+	Breck Boven - Hardwood Floor Installer
+	John Curtis - Stallion Manager
+	Stephen Harper - Fast Food Fry Cook
+
+LICENSE
+
+	The libCommas library itself falls collectively under Apache License, Version 2.0
+	Implementations of library interfaces are not considered part of the libCommas
+	library itself.
+		https://www.apache.org/licenses/LICENSE-2.0.html
+
+	Some parts of the library use different (we believe compatible) licenses.
+	They are:
+
+		micro-ecc was written by Kenneth MacKay and is licensed under the
+		BSD 2-clause license.
+			https://github.com/kmackay/micro-ecc
+			http://opensource.org/licenses/BSD-2-Clause
+
+		Files generated using Nanopb by Petteri Aimonen. Nanopb itself is under the
+		zlib license.
+			http://koti.kapsi.fi/jpa/nanopb/
+			http://opensource.org/licenses/Zlib
+
+	Interface implementations and sample code may include code not compatible with the
+	Apache License, Version 2.0
+	Currently being used are:
+
+		AVR-Crypto-Lib by Daniel Otte is under the GPLv3
+			https://www.das-labor.org/wiki/AVR-Crypto-Lib/en
+			https://www.gnu.org/copyleft/gpl.html
+
+		Portable C++ Hashing Library by Stephan Brumme is licensed similar to the
+		zlib license
+			http://create.stephan-brumme.com/hash-library/
+			http://create.stephan-brumme.com/disclaimer.html
+
+		Tinyserial library by Tim Fraser is under the LGPL
+			http://alum.wpi.edu/~tfraser/Software/Arduino/tinyserial.html
+			https://www.gnu.org/licenses/lgpl.html
+
+	All other code used in the compilation and linking of this library is licensed under
+	the license assigned to it by its respective author(s).
+
+	If you wish to retain the benefits of the Apache License, Version 2.0 and use the
+	included example main and interface implementations, you may need to re-write those
+	portions of the code with Apache License, Version 2.0 compatible code.
+
+CONTACT
+
+	Please don't.
+
+WEB SITE
+
+	https://github.com/saifeinc
+
+CAVEAT
+
+	If any of this code causes your computer to:
+	Melt, become moist, develop a sassy personality, become sentient, smell like waffles,
+	demand food after midnight, grow googly eyes, listen to Coldplay, develop a crush on
+	Benedict Cumberbatch, speak Portuguese, or otherwise cause the apocalypse:
+		It's John's fault.
