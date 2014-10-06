@@ -83,13 +83,13 @@ README
 	Makefile targets include:
 		make KEYS - Generates keys.h header file
 		make AVR_FACTORY - Builds libCommas and code for atmega328p
-			target to write keys to EERPROM.
+				target to write keys to EERPROM.
 		make AVR - Builds libCommas and uploadable demo code for
-			atmega328p target main loop.
+				atmega328p target main loop.
 		make UPLOAD - Attempts to upload generated .hex file to
-			atmega328p target.
+				atmega328p target.
 		make X86 - Builds libCommas and executable demo code for x86
-			target.
+				target.
 
 		Due to a number of #define's used to tell the compiler to use
 		optional inline assembly for serveral included libraries, it is
@@ -127,7 +127,7 @@ README
 
 	Join-Sequence State Machine:
 
-			End Device  					Border Router
+		End Device  			Border Router
 		+----------------------+        +--------------------+
 		|sendHelloMessage()    |------->|verifyHelloMessage()|
 		+----------------------+        +--------------------+
@@ -182,12 +182,12 @@ README
 	├── Makefile - A rough but functional Makefile
 	├── README - This file
 	├── useful_openssl_commands - A list of useful commands to generate
-	│		keys and such
+	│	keys and such
 	├── bin
 	│   ├── The location where binaries and hex files are placed
 	│   └── lib
 	│       └── The location where libCommas and other generated
-	│				libraries go
+	│		libraries go
 	├── include
 	│   ├── Headers for pretty much everything
 	│   ├── avr
@@ -199,14 +199,14 @@ README
 	└── src
 	    ├── keys
 	    │   └── x86 bash script and gen_key_header.cpp to create keys.h
-	 	│			header
+	 	│	header
 	 	├── avr
 	    │   └── AVR main.cpp - Endpoint device main code
 	    ├── border_router
 	    │   └── border_router.cpp - Border Router main code
 		├── X86_Node
 	    │   └── node.cpp - An x86 version of an endpoint device for
-	 	│			testing
+	 	│	testing
 	    ├── commas
 	    │   └── commas.cpp - libCommas implementation
 	    ├── interfaces - Platform specific interface implementations
@@ -222,9 +222,9 @@ README
 	    │   └── AVR-Crypto-Lib source and assembly files
 	    ├── tinyserial
 	    │   ├── libtinyserial.a - tinyserial library for atmega328p
-	 	│	│		target
+	 	│	│	target
 	    │   └── tinyserial assembly and generated object files for
-	 	│			atmega328p
+	 	│		atmega328p
 	    └── uEcc
 	        └── uECC C code
 
@@ -271,7 +271,7 @@ LICENSE
 			http://create.stephan-brumme.com/disclaimer.html
 
 		Tinyserial library by Tim Fraser is under the LGPL
-			http://alum.wpi.edu/~tfraser/Software/Arduino/tinyserial.html
+		http://alum.wpi.edu/~tfraser/Software/Arduino/tinyserial.html
 			https://www.gnu.org/licenses/lgpl.html
 
 	All other code used in the compilation and linking of this library
@@ -290,7 +290,7 @@ CONTACT
 
 WEB SITE
 
-	https://github.com/saifeinc
+	https://github.com/saifeinc/libCommas
 
 CAVEAT
 
