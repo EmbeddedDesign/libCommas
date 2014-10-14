@@ -36,34 +36,55 @@ int main(int argc, char const *argv[])
 	saife_factory.setAttestationSig(EDATTSIG);
 
 	// Terrible, horrible state machine
-	for(uint8_t i = 0; i < 3; i ++)
-	{
-		saife.sendHelloMessage();
-		usleep(1);
-	}
-
+	uint8_t state = 0;
 	for(;;)
 	{
-		if(saife.verifyJoinRequest())
+		switch(state)
 		{
-			for(uint8_t i = 0; i < 3; i ++)
-			{
+			case 0:
+				saife.sendHelloMessage();
+				usleep(500000);
+				state = 1;
+				break;
+			case 1:
+				if(saife.verifyJoinRequest())
+				{
+					state = 2;
+				}
+				else
+				{
+					state = 0;
+				}
+				break;
+			case 2:
 				saife.sendJoinResponse();
-				usleep(1);
-			}
-			for(;;)
-			{
+				usleep(500000);
+				state = 3;
+				break;
+			case 3:
 				if(saife.verifyTokenSignature())
 				{
-					for(uint8_t i = 0; i < 3; i ++)
-					{
-						saife.sendACK();
-						usleep(1);
-					}
+					state = 4;
 				}
-			}
+				else
+				{
+					state = 2;
+				}
+				break;
+			case 4:
+				for(uint8_t i = 0; i < 2; i ++)
+				{
+					saife.sendACK();
+					usleep(500000);
+				}
+				state = 5;
+				break;
+			case 5:
+				static uint8_t data[] = { 'B', 'C', 'H'};
+				saife.sendSignedMessage(data, sizeof(data));
+				usleep(500000);
+				break;
 		}
-		usleep(1);
 	}
 	return 0;
 }

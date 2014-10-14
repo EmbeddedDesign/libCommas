@@ -8,7 +8,7 @@ INTERMEDATES = ./src/intermediates/
 BAUD_RATE = 19200
 
 # AVR VARIABLES
-AVRPORT = /dev/ttyUSB1
+AVRPORT = /dev/ttyUSB0
 AVRGPP = /usr/bin/avr-g++
 AVRGCC = /usr/share/arduino/hardware/tools/avr/bin/avr-gcc
 AVRAR = /usr/bin/avr-ar
@@ -26,7 +26,7 @@ AVR_SCR = ./src/avr/
 AVR_SHA_SRC = ./src/sha256/*.S
 
 # UNIX VARIABLES
-PORT = /dev/ttyUSB1
+PORT = /dev/ttyUSB0
 KEYS_DIRECTORY = /home/stephen/key
 GPP = /usr/bin/g++
 AR = /usr/bin/ar
@@ -100,7 +100,8 @@ X86_APP:
 X86_NODE:
 	@echo [92mCreating binary for X86 Endpoint[0m
 	$(GPP) $(GPPFLAGS) -c $(NODE_SRC)node.cpp
-	$(GPP) node.o -L$(LIBDIR) -lCommas -o bin/node
+	mv ./*.o $(INTERMEDATES)
+	$(GPP) $(INTERMEDATES)node.o -L$(LIBDIR) -lCommas -o bin/node
 
 KEY_HEADER:
 	@echo [92mCreating keys.h header file[0m

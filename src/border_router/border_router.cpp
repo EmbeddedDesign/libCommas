@@ -37,41 +37,60 @@ int main(int argc, char const *argv[])
 	saife_factory.setUUID(BRUUID);
 	saife_factory.setAttestationSig(BRATTSIG);
 	
-	// We really need to fix these nested loops with a better state machine
+	// Border router join sequence state machine
+	uint8_t state = 0;
 	for(;;)
 	{
-	    if(saife.verifyHelloMessage())
-	    {
-	    	printf("Hello Message verified\n");
-	        for(;;)
-	        {
+		switch(state)
+		{
+			case 0:
+	    		if(saife.verifyHelloMessage())
+	    		{
+	    			printf("Hello Message verified\n");
+	    			state = 1;
+	    		}
+	    		break;
+	    	case 1:
 		        saife.sendJoinRequest();
+		        state = 2;
+		        break;
+		    case 2:
 		        if(saife.verifyJoinResponse())
 		        {
 		        	printf("\nBR join response verified");
-		        	for(;;)
+		        	state = 3;
+		        }
+		        else
+		        {
+		        	state = 1;
+		        }
+		        break;
+		    case 3:
+		        saife.sendTokenSignature();
+		        state = 4;
+		        break;
+		    case 4:
+		        if(saife.verifyACK())
+		        {
+		        	printf("\nACK VERIFIED!!!");
+		        	state = 5;
+		        }
+		        else
+		        {
+		        	state = 3;
+		        }
+		        break;
+		    case 5:
+		        memset(dataBuffer, 0, sizeof(dataBuffer));
+		        if(saife.verifySignedMessage(dataBuffer))
+		        {
+		        	printf("Signed Data Verified!\nData: ");
+		        	for(uint8_t i = 0; i < sizeof(dataBuffer); i++)
 		        	{
-		        		saife.sendTokenSignature();
-		        		if(saife.verifyACK())
-		        		{
-		        			printf("\nACK VERIFIED!!!");
-		        			for(;;)
-		        			{
-		        				memset(dataBuffer, 0, sizeof(dataBuffer));
-		        				if(saife.verifySignedMessage(dataBuffer))
-		        				{
-		        					printf("Signed Data Verified!\nData: ");
-		        					for(uint8_t i = 0; i < sizeof(dataBuffer); i++)
-		        					{
-		        						printf("%c", dataBuffer[i]);
-		        					}
-		        				}
-		        			}
-		        		}
+		        		printf("%c", dataBuffer[i]);
 		        	}
 		        }
-		    }
-	    }
+		   }
 	}
 	return 0;
 }
