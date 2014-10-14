@@ -29,8 +29,16 @@ Commas_FACTORY saife_factory(&memfile);
  */
 int main(int argc, char const *argv[])
 {
+	// Seed random so our signatures are strong
 	saife.seedRandom(time(NULL));
+
+	// Set the Private key to the CA Private key for signing operations
 	saife_factory.setPrivateKey(CAPrivateKey);
+
+	// Set CA Public key for verification operations
+	saife_factory.setCA(CAPublicKey);
+	uint8_t CAPub[64];
+	saife_factory.readMem(CAPub, 64, 1);
 
 	// Create an output file stream
 	ofstream file;
@@ -64,10 +72,19 @@ int main(int argc, char const *argv[])
 		saife_factory.setPublicKey(EDPublicKey);
 		
 		uint8_t EndDevicePublicKey[64];
-		saife_factory.readMem(EndDevicePublicKey, 64, 2);
+		saife_factory.readMem(EndDevicePublicKey, sizeof(EndDevicePublicKey), 2);
 
 		uint8_t EndDeviceSignature[64];
 		saife.sign(EndDevicePublicKey, EndDeviceSignature, sizeof(EndDevicePublicKey));
+
+		if(saife.verify(CAPub, EndDevicePublicKey, EndDeviceSignature, sizeof(EndDevicePublicKey)))
+		{
+			printf("END DEVICE SIGNATURE VERIFICATION: PASS\n");
+		}
+		else
+		{
+			printf("END DEVICE SIGNATURE VERIFICATION: FAIL\n");
+		}
 
 		char EndDeviceSignatureBuffer[129];
 
@@ -95,10 +112,19 @@ int main(int argc, char const *argv[])
 		saife_factory.setPublicKey(BRPublicKey);
 		
 		uint8_t BorderRouterPublicKey[64];
-		saife_factory.readMem(BorderRouterPublicKey, 64, 2);
+		saife_factory.readMem(BorderRouterPublicKey, sizeof(BorderRouterPublicKey), 2);
 
 		uint8_t BorderRouterSignature[64];
 		saife.sign(BorderRouterPublicKey, BorderRouterSignature, sizeof(BorderRouterPublicKey));
+
+		if(saife.verify(CAPub, BorderRouterPublicKey, BorderRouterSignature, sizeof(BorderRouterPublicKey)))
+		{
+			printf("BORDER ROUTER SIGNATURE VERIFICATION: PASS\n");
+		}
+		else
+		{
+			printf("BORDER ROUTER SIGNATURE VERIFICATION: FAIL\n");
+		}
 
 		char BorderRouterSignatureBuffer[129] = {0};
 

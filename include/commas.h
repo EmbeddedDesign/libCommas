@@ -142,12 +142,12 @@ public:
      */
     void sign(const uint8_t* data, uint8_t* buffer, uint8_t size);
 
-private:
     /**
      * Verify a Signature of Data with the Public Key Provided
      */
     bool verify(const uint8_t* pubK, const uint8_t* data, const uint8_t* sig, uint8_t size);
 
+private:
     /**
      * Hash data and put the result in buffer
      */
