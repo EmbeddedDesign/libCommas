@@ -61,6 +61,8 @@ README
 		AVRSTRIP - avr-strip executable
 		AVRSIZE - avr-size executable
 		AVRDUDE - avrdude executable
+		KEYS_DIRECTORY - The directory in which x86 border router keys
+			are stored
 		PORT - The serial port to communicate on for the border router
 		GPP - g++ executable
 		AR - ar executable
@@ -197,36 +199,36 @@ README
 	│   └── util
 	│       └── Util specefic header files (such as delay)
 	└── src
-	    ├── keys
-	    │   └── x86 bash script and gen_key_header.cpp to create keys.h
-	 	│	header
-	 	├── avr
-	    │   └── AVR main.cpp - Endpoint device main code
-	    ├── border_router
-	    │   └── border_router.cpp - Border Router main code
+		├── keys
+		│   └── x86 bash script and gen_key_header.cpp to create keys.h
+		│	header
+		├── avr
+		│   └── AVR main.cpp - Endpoint device main code
+		├── border_router
+		│   └── border_router.cpp - Border Router main code
 		├── X86_Node
-	    │   └── node.cpp - An x86 version of an endpoint device for
-	 	│	testing
-	    ├── commas
-	    │   └── commas.cpp - libCommas implementation
-	    ├── interfaces - Platform specific interface implementations
-	    │   ├── AVR
-	    │   │   └── AVR specific interface implementations
-	    │   └── Unix
-	    │       └── *nix specific interface implementations
-	    ├── intermediates
-	    │   └── Generated object files get moved to here
-	    ├── messaging
-	    │   └── Generated nanobp C files
-	    ├── sha256
-	    │   └── AVR-Crypto-Lib source and assembly files
-	    ├── tinyserial
-	    │   ├── libtinyserial.a - tinyserial library for atmega328p
-	 	│	│	target
-	    │   └── tinyserial assembly and generated object files for
-	 	│		atmega328p
-	    └── uEcc
-	        └── uECC C code
+		│   └── node.cpp - An x86 version of an endpoint device for
+		│	testing
+		├── commas
+		│   └── commas.cpp - libCommas implementation
+		├── interfaces - Platform specific interface implementations
+		│   ├── AVR
+		│   │   └── AVR specific interface implementations
+		│   └── Unix
+		│       └── *nix specific interface implementations
+		├── intermediates
+		│   └── Generated object files get moved to here
+		├── messaging
+		│   └── Generated nanobp C files
+		├── sha256
+		│   └── AVR-Crypto-Lib source and assembly files
+		├── tinyserial
+		│   ├── libtinyserial.a - tinyserial library for atmega328p
+		│	│	target
+		│   └── tinyserial assembly and generated object files for
+		│		atmega328p
+		└── uEcc
+		    └── uECC C code
 
 AUTHORS
 
@@ -287,6 +289,8 @@ LICENSE
 CONTACT
 
 	Please don't.
+	Or, you know, try the issue tracker:
+		https://github.com/saifeinc/libCommas/issues
 
 WEB SITE
 
